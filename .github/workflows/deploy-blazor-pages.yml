@@ -36,6 +36,26 @@ jobs:
       - name: Publish Blazor WebAssembly
         run: dotnet publish PBSK/PBSK.Web.Client/PBSK.Web.Client.csproj --configuration Release --output publish
 
+      - name: Create GitHub Pages host page
+        run: |
+          cat > publish/wwwroot/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <base href="/PBallScoreKeeper/" />
+            <title>PBall Score Keeper</title>
+            <link rel="stylesheet" href="_content/PBSK.Shared/app.css" />
+          </head>
+          <body>
+            <div id="app"></div>
+            <script src="_content/PBSK.Shared/speech.js"></script>
+            <script src="_framework/blazor.webassembly.js"></script>
+          </body>
+          </html>
+          EOF
+
       - name: Add GitHub Pages fallback
         run: cp publish/wwwroot/index.html publish/wwwroot/404.html
 
