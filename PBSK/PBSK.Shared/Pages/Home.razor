@@ -358,18 +358,24 @@
         servingTeamModel.Score = Math.Max(0, servingTeamModel.Score + amount);
         UpdateCourtNames();
 
+        if (amount > 0 && !setHasBeenWon && HasWonSet(servingTeamModel))
+        {
+            setHasBeenWon = true;
+            await AnnounceSetWinner(servingTeamModel);
+            return;
+        }
+
         if (servingTeamModel.Score >= 1 && !servingTeamModel.HasReachedOne)
         {
             servingTeamModel.HasReachedOne = true;
             await Speak($"{servingTeamModel.Name} are out of the jar, its all gravy from here");
         }
 
-        if (amount > 0 && !setHasBeenWon && HasWonSet(servingTeamModel))
-        {
-            setHasBeenWon = true;
-            await Speak($"{servingTeamModel.Name} has won the set");
-        }
+    }
 
+    private Task AnnounceSetWinner(Team winningTeam)
+    {
+        return JS.InvokeVoidAsync("speakText", $"{winningTeam.Name} has won the set").AsTask();
     }
 
     private bool HasWonSet(Team team)
