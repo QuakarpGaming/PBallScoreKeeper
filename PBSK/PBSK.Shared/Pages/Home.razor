@@ -1,0 +1,461 @@
+﻿@page "/"
+@using PBSK.Shared.Models
+@inject Microsoft.JSInterop.IJSRuntime JS
+@implements IDisposable
+
+<div @ref="homePage" class="home-page @(isNavBarHidden ? "navbar-hidden" : string.Empty)" tabindex="0">
+    <div class="navbar-hover-zone" @onmouseenter="ShowNavBar"></div>
+    <div class="navBarCust px-4" @onmouseenter="ShowNavBar" @onmouseleave="HideNavBar">
+        <button class="btn btn-success mx-4" @onclick="OpenMatchSettings">Match Setting</button>
+        <button class="btn btn-success mx-4" @onclick="OpenPlayerNameEntry">Player Name Entry</button>
+    </div>
+
+    @if (isMatchSettingsOpen)
+    {
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="matchSettingsTitle">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="matchSettingsTitle">Match Settings</h5>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="CloseMatchSettings"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row d-flex align-items-center flex-column">
+                            <label>Games Go To <InputNumber @bind-value="playTill" /></label>
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="checkbox" @bind-value="winBy" />
+                                Win by 2
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseMatchSettings">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+    @if (isPlayerNameEntryOpen)
+    {
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="matchSettingsTitle">
+            <div class="modal-dialog player-name-entry-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="matchSettingsTitle">Player Name Entry</h5>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="OpenPlayerNameEntry"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row d-flex align-items-center flex-column">
+                           
+                             <table class="table table-bordered player-name-entry-table">
+                                <thead>
+                                    <tr>
+                                        <th>Team Name</th>
+                                        <th>Right Side Player(1st Server)</th>
+                                        <th>Left Side Player</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><InputText @bind-value="sTeam.Name" /></td>
+                                        <td><InputText @bind-Value="sTeam.Player1" list="playerNames" /></td>
+                                        <td><InputText @bind-Value="sTeam.Player2" list="playerNames" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td><InputText @bind-value="nTeam.Name" /></td>
+                                        <td><InputText @bind-Value="nTeam.Player1" list="playerNames" /></td>
+                                        <td><InputText @bind-Value="nTeam.Player2" list="playerNames" /></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="OpenPlayerNameEntry">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+    <div class="container-fluid px-0">
+        <div class="teamNames">
+            <div class="row w-100 flex-nowrap g-0">
+                <div class="card team-card col-6">
+                    <div class="card-body">
+                        <label>@sTeam.Name: @sTeam.Score</label>
+                    </div>
+                </div>
+                <div class="card team-card col-6">
+                    <div class="card-body">
+                        <label>@nTeam.Name: @nTeam.Score</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="court-container" aria-label="Court">
+        <table class="court-grid" aria-label="Pickleball court zones">
+            <colgroup>
+                <col style="width: 34.09%" />
+                <col style="width: 15.91%" />
+                <col style="width: 15.91%" />
+                <col style="width: 34.09%" />
+            </colgroup>
+            <tbody>
+                <tr>
+                    <td>
+                        @if(!string.IsNullOrEmpty(sTopName))
+                        {
+                            <label class="@GetCourtPlayerClass('S', sTopName)">@sTopName</label>
+                        }
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td>@if(!string.IsNullOrEmpty(nTopName))
+                        {
+                            <label class="@GetCourtPlayerClass('N', nTopName)">@nTopName</label>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>@if(!string.IsNullOrEmpty(sBotName))
+                        {
+                            <label class="@GetCourtPlayerClass('S', sBotName)">@sBotName</label>
+                        }
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td>@if(!string.IsNullOrEmpty(nBotName))
+                        {
+                            <label class="@GetCourtPlayerClass('N', nBotName)">@nBotName</label>
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="phone-score-overlay @(isPhoneOverlayHidden ? "phone-score-overlay-hidden" : string.Empty)"
+         @onpointerdown="ShowPhoneOverlay">
+        <button type="button" class="phone-score-button phone-score-up" @onclick="IncreaseScore" aria-label="Increase score">+</button>
+        <button type="button" class="phone-score-button phone-score-down" @onclick="DecreaseScore" aria-label="Decrease score">−</button>
+        <button type="button" class="phone-score-button phone-score-server" @onclick="AdvanceServerFromPhone" aria-label="Next server">⇢</button>
+    </div>
+    <div class="scoreBottom">@CurrentScore</div>
+</div>
+
+<datalist id="playerNames">
+    @foreach (var name in SavedPlayerNames)
+    {
+        <option value="@name" />
+    }
+</datalist>
+@code {
+    #region Variables
+    private int playTill = 11;
+    private bool winBy = true;
+    private bool isMatchSettingsOpen;
+    private bool isPlayerNameEntryOpen;
+    private List<string> SavedPlayerNames = new List<string>();
+    private Team sTeam = new Team { Name = "South Team", Score = 0 };
+    private Team nTeam = new Team { Name = "North Team", Score = 0 };
+
+    private const string DefaultSouthTeamName = "South Team";
+    private const string DefaultNorthTeamName = "North Team";
+
+    private string sTopName = string.Empty;
+    private string sBotName = string.Empty;
+    private string nTopName = string.Empty;
+    private string nBotName = string.Empty;
+    private bool isNavBarHidden;
+    private bool isPhoneOverlayHidden;
+    private Timer? phoneOverlayTimer;
+    private ElementReference homePage;
+    private DotNetObjectReference<Home>? dotNetHelper;
+    private char servingTeam = 'N'; // 'S' for South, 'N' for North
+    private string CurrentServer = string.Empty;
+    private int serverNumber = 1;
+    private bool isFirstServerRotation = true;
+    private string CurrentScore => $"{(servingTeam == 'N' ? nTeam.Score : sTeam.Score)} - {(servingTeam == 'N' ? sTeam.Score : nTeam.Score)} - {(isFirstServerRotation ? "Start" : serverNumber.ToString())}. {CurrentServer} To Serve!";
+    #endregion
+    #region page Life
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        var storedPlayTill = await JS.InvokeAsync<string?>("sessionStorage.getItem", "playTill");
+        var storedWinBy = await JS.InvokeAsync<string?>("sessionStorage.getItem", "winBy");
+
+        if (int.TryParse(storedPlayTill, out var parsedPlayTill))
+        {
+            playTill = parsedPlayTill;
+        }
+
+        if (bool.TryParse(storedWinBy, out var parsedWinBy))
+        {
+            winBy = parsedWinBy;
+        }
+        SavedPlayerNames = (await JS.InvokeAsync<string>("localStorage.getItem", "SavedPlayerNames") ?? "").Split(",").Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s) && s != "[]").ToList();
+        UpdateCourtNames();
+        await homePage.FocusAsync();
+        dotNetHelper = DotNetObjectReference.Create(this);
+        await JS.InvokeVoidAsync("registerGlobalKeyHandler", dotNetHelper);
+        StateHasChanged();
+    }
+    #endregion
+
+    #region Dialog Methods
+    private void ShowNavBar()
+    {
+        if (isNavBarHidden)
+        {
+            isNavBarHidden = false;
+            _ = InvokeAsync(StateHasChanged);
+        }
+
+    }
+
+    private void HideNavBar()
+    {
+        if (!isNavBarHidden)
+        {
+            isNavBarHidden = true;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowPhoneOverlay()
+    {
+        isPhoneOverlayHidden = false;
+        phoneOverlayTimer?.Dispose();
+        phoneOverlayTimer = new Timer(_ =>
+        {
+            isPhoneOverlayHidden = true;
+            _ = InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(4), Timeout.InfiniteTimeSpan);
+    }
+
+    private async Task IncreaseScore()
+    {
+        ShowPhoneOverlay();
+        await ChangeServingTeamScore(1);
+    }
+
+    private async Task DecreaseScore()
+    {
+        ShowPhoneOverlay();
+        await ChangeServingTeamScore(-1);
+    }
+
+    private async Task AdvanceServerFromPhone()
+    {
+        ShowPhoneOverlay();
+        await AdvanceServer();
+    }
+
+    private void OpenMatchSettings()
+    {
+        isMatchSettingsOpen = true;
+    }
+
+    private void OpenPlayerNameEntry()
+    {
+        isPlayerNameEntryOpen = !isPlayerNameEntryOpen;
+        if (!isPlayerNameEntryOpen)
+        {
+            //make player1 and player2 names pascal case
+            sTeam.Player1 = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(sTeam.Player1);
+            sTeam.Player2 = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(sTeam.Player2);
+            nTeam.Player1 = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(nTeam.Player1);
+            nTeam.Player2 = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(nTeam.Player2);
+
+            UpdateTeamNameIfUnchanged(sTeam, DefaultSouthTeamName);
+            UpdateTeamNameIfUnchanged(nTeam, DefaultNorthTeamName);
+
+            //check both teams player1 and player2 if they are in the saved player names list, if not add them to the list
+            if (!SavedPlayerNames.Contains(sTeam.Player1) && !string.IsNullOrWhiteSpace(sTeam.Player1))
+            {
+                SavedPlayerNames.Add(sTeam.Player1);
+            }
+            if (!SavedPlayerNames.Contains(sTeam.Player2) && !string.IsNullOrWhiteSpace(sTeam.Player2))
+            {
+                SavedPlayerNames.Add(sTeam.Player2);
+            }
+            if (!SavedPlayerNames.Contains(nTeam.Player1) && !string.IsNullOrWhiteSpace(nTeam.Player1))
+            {
+                SavedPlayerNames.Add(nTeam.Player1);
+            }
+            if (!SavedPlayerNames.Contains(nTeam.Player2) && !string.IsNullOrWhiteSpace(nTeam.Player2))
+            {
+                SavedPlayerNames.Add(nTeam.Player2);
+            }
+            SavedPlayerNames.Sort();
+            //add the saved player names to browser local storage
+            JS.InvokeVoidAsync("localStorage.setItem", "SavedPlayerNames", string.Join(",", SavedPlayerNames));
+            UpdateCourtNames();
+        }
+    }
+
+    private static void UpdateTeamNameIfUnchanged(Team team, string defaultTeamName)
+    {
+        if (team.Name == defaultTeamName &&
+            !string.IsNullOrWhiteSpace(team.Player1) &&
+            !string.IsNullOrWhiteSpace(team.Player2))
+        {
+            team.Name = $"{team.Player1} & {team.Player2}";
+        }
+    }
+
+    private async Task CloseMatchSettings()
+    {
+        await JS.InvokeVoidAsync("sessionStorage.setItem", "playTill", playTill);
+        await JS.InvokeVoidAsync("sessionStorage.setItem", "winBy", winBy);
+        isMatchSettingsOpen = false;
+    }
+    #endregion
+
+    #region names and scoring
+    private Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        return HandleKeyDown(e.Key);
+    }
+
+    [JSInvokable]
+    public async Task HandleGlobalKeyDown(string key)
+    {
+        await HandleKeyDown(key);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleKeyDown(string key)
+    {
+        switch (key)
+        {
+            case "ArrowUp":
+                await ChangeServingTeamScore(1);
+                break;
+            case "ArrowDown":
+                await ChangeServingTeamScore(-1);
+                break;
+            case "ArrowRight":
+                await AdvanceServer();
+                break;
+            case " ":
+            case "Spacebar":
+                await Speak("score");
+                break;
+        }
+    }
+
+    private async Task ChangeServingTeamScore(int amount)
+    {
+        var servingTeamModel = servingTeam == 'N' ? nTeam : sTeam;
+        servingTeamModel.Score = Math.Max(0, servingTeamModel.Score + amount);
+        UpdateCourtNames();
+
+        if (servingTeamModel.Score >= 1 && !servingTeamModel.HasReachedOne)
+        {
+            servingTeamModel.HasReachedOne = true;
+            await Speak($"{servingTeamModel.Name} are out of the jar, its all gravy from here");
+        }
+
+    }
+
+    private async Task AdvanceServer()
+    {
+        var teamChanged = false;
+
+        if (isFirstServerRotation)
+        {
+            serverNumber = 1;
+            servingTeam = servingTeam == 'N' ? 'S' : 'N';
+            isFirstServerRotation = false;
+            teamChanged = true;
+        }
+        else if (serverNumber < 2)
+        {
+            serverNumber++;
+        }
+        else
+        {
+            serverNumber = 1;
+            servingTeam = servingTeam == 'N' ? 'S' : 'N';
+            teamChanged = true;
+        }
+
+        UpdateCourtNames();
+
+        if (teamChanged)
+        {
+            await Speak("sideout");
+        }
+    }
+
+    private void UpdateCourtNames()
+    {
+        sTopName = sTeam.Score % 2 == 0 ? sTeam.Player2 : sTeam.Player1;
+        sBotName = sTeam.Score % 2 == 0 ? sTeam.Player1 : sTeam.Player2;
+        nTopName = nTeam.Score % 2 == 0 ? nTeam.Player1 : nTeam.Player2;
+        nBotName = nTeam.Score % 2 == 0 ? nTeam.Player2 : nTeam.Player1;
+        UpdateCurrentServer();
+    }
+
+    private void UpdateCurrentServer()
+    {
+        var servingTeamModel = servingTeam == 'N' ? nTeam : sTeam;
+        CurrentServer = serverNumber == 1
+            ? servingTeamModel.Player1
+            : servingTeamModel.Player2;
+    }
+
+    private string GetCourtPlayerClass(char team, string playerName)
+    {
+        var servingTeamModel = servingTeam == 'N' ? nTeam : sTeam;
+        var currentServerName = serverNumber == 1
+            ? servingTeamModel.Player1
+            : servingTeamModel.Player2;
+
+        return servingTeam == team && playerName == currentServerName
+            ? "court-player-label current-server"
+            : "court-player-label";
+    }
+
+    private async Task Speak(string text)
+    {
+
+        /////you are hooking this up when you get back
+        switch(text)
+        {
+            case "score":
+                await JS.InvokeVoidAsync("speakScore", CurrentScore, playTill, winBy);
+                break;
+            case "sideout":
+                await JS.InvokeVoidAsync("speakText", "Side out");
+                break; 
+            case "win":
+                await JS.InvokeVoidAsync("speakText", $"{(servingTeam == 'N' ? nTeam.Name : sTeam.Name)} have won!");
+                break;
+            case "gravy":
+                await JS.InvokeVoidAsync("speakText", $"{(servingTeam == 'N' ? nTeam.Name : sTeam.Name)} are out of the pickle jar. it is all gravy from here");
+                break;
+            default:
+                await JS.InvokeVoidAsync("speakText", text);
+                break;
+                
+        }
+    }
+
+    public void Dispose()
+    {
+        _ = JS.InvokeVoidAsync("unregisterGlobalKeyHandler");
+        dotNetHelper?.Dispose();
+        phoneOverlayTimer?.Dispose();
+    }
+
+    #endregion
+
+}

@@ -1,0 +1,41 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build output
+**/bin/
+**/obj/
+
+# Test output
+TestResults/
+*.trx
+
+# Visual Studio Code
+.vscode/
+
+# .NET tooling
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Blazor generated output
+**/wwwroot/_framework/
+**/wwwroot/_content/
+
+# MAUI generated output
+**/Platforms/**/bin/
+**/Platforms/**/obj/
+*.apk
+*.aab
+*.ipa
+**/*.keystore
+**/*.jks
+**/android-signing.props
+
+# OS files
+.DS_Store
+Thumbs.db

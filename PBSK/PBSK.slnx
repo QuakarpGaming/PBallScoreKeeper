@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="PBSK.Shared/PBSK.Shared.csproj" />
+  <Project Path="PBSK.Web.Client/PBSK.Web.Client.csproj" />
+  <Project Path="PBSK.Web/PBSK.Web.csproj" />
+  <Project Path="PBSK/PBSK.csproj" />
+</Solution>
