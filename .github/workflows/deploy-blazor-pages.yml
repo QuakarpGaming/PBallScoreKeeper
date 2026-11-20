@@ -36,6 +36,9 @@ jobs:
       - name: Publish Blazor WebAssembly
         run: dotnet publish PBSK/PBSK.Web.Client/PBSK.Web.Client.csproj --configuration Release --output publish
 
+      - name: Verify court image asset
+        run: test -f publish/wwwroot/_content/PBSK.Shared/images/court.png
+
       - name: Create GitHub Pages host page
         run: |
           cat > publish/wwwroot/index.html <<'EOF'
