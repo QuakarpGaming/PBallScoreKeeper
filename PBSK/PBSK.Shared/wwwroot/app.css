@@ -186,7 +186,7 @@ h1:focus {
     height: auto;
     min-height: 0;
     flex: 1 1 auto;
-    background-image: url('/_content/PBSK.Shared/images/court.png');
+    background-image: url('_content/PBSK.Shared/images/court.png');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
