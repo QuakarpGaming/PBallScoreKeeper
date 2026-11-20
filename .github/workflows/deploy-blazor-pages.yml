@@ -27,6 +27,9 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: Restore dependencies
         run: dotnet restore PBSK/PBSK.Web.Client/PBSK.Web.Client.csproj
 
