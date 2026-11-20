@@ -177,6 +177,7 @@
     private string CurrentServer = string.Empty;
     private int serverNumber = 1;
     private bool isFirstServerRotation = true;
+    private bool setHasBeenWon;
     private string CurrentScore => $"{(servingTeam == 'N' ? nTeam.Score : sTeam.Score)} - {(servingTeam == 'N' ? sTeam.Score : nTeam.Score)} - {(isFirstServerRotation ? "Start" : serverNumber.ToString())}. {CurrentServer} To Serve!";
     #endregion
     #region page Life
@@ -363,6 +364,23 @@
             await Speak($"{servingTeamModel.Name} are out of the jar, its all gravy from here");
         }
 
+        if (amount > 0 && !setHasBeenWon && HasWonSet(servingTeamModel))
+        {
+            setHasBeenWon = true;
+            await Speak($"{servingTeamModel.Name} has won the set");
+        }
+
+    }
+
+    private bool HasWonSet(Team team)
+    {
+        return team.Score >= playTill &&
+            (!winBy || team.Score - GetOtherTeam(team).Score >= 2);
+    }
+
+    private Team GetOtherTeam(Team team)
+    {
+        return ReferenceEquals(team, nTeam) ? sTeam : nTeam;
     }
 
     private async Task AdvanceServer()
