@@ -285,8 +285,139 @@ h1:focus {
 }
 
 .player-name-entry-dialog {
-    width: 90vw;
-    max-width: 900px;
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    box-sizing: border-box;
+    height: fit-content;
+    max-height: 90vh;
+    margin: 1.75rem auto;
+    border: 0.15rem dotted #39ff14 !important;
+    border-radius: 0.5rem;
+}
+
+.player-name-entry-dialog .modal-content {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    height: fit-content;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-dialog:not(.player-name-entry-dialog) {
+    width: max-content;
+    max-width: 95vw;
+    margin: 1.75rem auto;
+}
+
+.modal-dialog:not(.player-name-entry-dialog) .modal-content {
+    width: max-content;
+    min-width: 16rem;
+    max-width: 95vw;
+    border: 0.15rem dotted #39ff14 !important;
+    border-radius: 0.5rem;
+}
+
+.player-name-entry-dialog .modal-header,
+.player-name-entry-dialog .modal-body,
+.player-name-entry-dialog .modal-footer {
+    padding: 0.35rem 0.5rem;
+}
+
+.player-name-entry-dialog .modal-content {
+    border: 0.15rem dotted #39ff14 !important;
+}
+
+.player-name-entry-dialog .modal-body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.player-name-entry-dialog .modal-title {
+    font-size: clamp(0.7rem, min(2.2vh, 1.2vw), 1.1rem);
+}
+
+.player-name-entry-dialog .player-name-entry-table {
+    display: table;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    table-layout: fixed;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+    table-layout: fixed;
+    font-size: clamp(0.55rem, min(2.2vh, 1.2vw), 1.5rem);
+    word-break: break-word;
+}
+
+.player-name-entry-dialog .player-name-entry-table th,
+.player-name-entry-dialog .player-name-entry-table td {
+    padding: 0.15rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: middle;
+    min-width: 0;
+}
+
+.player-name-entry-dialog .player-name-entry-table input {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 0.1rem;
+    font-size: inherit;
+}
+
+.player-name-entry-dialog .modal-footer .btn {
+    padding: 0.15rem 0.4rem;
+    font-size: clamp(0.55rem, 0.8vw, 0.75rem);
+}
+
+.saved-names-dialog {
+    width: min(80vw, 32rem);
+    max-width: 80vw;
+}
+
+.match-history-dialog {
+    width: min(80vw, 40rem);
+    max-width: 80vw;
+}
+
+.match-history-list {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.match-history-list li {
+    margin-bottom: 0.35rem;
+}
+
+.saved-names-list {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.saved-names-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.35rem;
+}
+
+.saved-name-remove {
+    border: 1px solid #e50000 !important;
+    border-radius: 0.25rem;
+    background: transparent !important;
+    color: #e50000 !important;
+    font-size: 1.25rem;
+    font-weight: bold;
+    line-height: 1;
+    padding: 0.1rem 0.35rem;
 }
 
 .player-name-entry-table input {

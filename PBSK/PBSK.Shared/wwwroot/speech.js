@@ -108,7 +108,7 @@ window.registerGlobalKeyHandler = function (dotNetHelper) {
             return;
         }
 
-        const supportedKeys = ['ArrowUp', 'ArrowDown', 'ArrowRight', ' ', 'Spacebar'];
+        const supportedKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Spacebar'];
         if (supportedKeys.includes(event.key)) {
             event.preventDefault();
             dotNetHelper.invokeMethodAsync('HandleGlobalKeyDown', event.key);

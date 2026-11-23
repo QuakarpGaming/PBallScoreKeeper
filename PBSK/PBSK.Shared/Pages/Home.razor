@@ -8,6 +8,8 @@
     <div class="navBarCust px-4" @onmouseenter="ShowNavBar" @onmouseleave="HideNavBar">
         <button class="btn btn-success mx-4" @onclick="OpenMatchSettings">Match Setting</button>
         <button class="btn btn-success mx-4" @onclick="OpenPlayerNameEntry">Player Name Entry</button>
+        <button class="btn btn-success mx-4" @onclick="OpenSavedNames">Saved Names</button>
+        <button class="btn btn-success mx-4" @onclick="OpenMatchHistory">Match History</button>
     </div>
 
     @if (isMatchSettingsOpen)
@@ -30,6 +32,75 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @onclick="CloseMatchSettings">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+    @if (isMatchHistoryOpen)
+    {
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="matchHistoryTitle">
+            <div class="modal-dialog match-history-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="matchHistoryTitle">Match History</h5>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="CloseMatchHistory"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (MatchHistory.Count == 0)
+                        {
+                            <p>No match history.</p>
+                        }
+                        else
+                        {
+                            <ul class="match-history-list">
+                                @foreach (var entry in MatchHistory)
+                                {
+                                    <li>
+                                        @(entry.ServerNumber == 0 ? "Start" : $"Server {entry.ServerNumber}"): @entry.ServingPlayer serving for @entry.ServingTeam (@entry.SouthScore - @entry.NorthScore)
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseMatchHistory">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+    @if (isSavedNamesOpen)
+    {
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="savedNamesTitle">
+            <div class="modal-dialog saved-names-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="savedNamesTitle">Saved Names</h5>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="CloseSavedNames"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (SavedPlayerNames.Count == 0)
+                        {
+                            <p>No saved names.</p>
+                        }
+                        else
+                        {
+                            <ul class="saved-names-list">
+                                @foreach (var name in SavedPlayerNames)
+                                {
+                                    <li>
+                                        <span>@name</span>
+                                        <button type="button" class="saved-name-remove" title="Remove @name" aria-label="Remove @name" @onclick="() => RemoveSavedName(name)">×</button>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseSavedNames">Close</button>
                     </div>
                 </div>
             </div>
@@ -157,7 +228,10 @@
     private bool winBy = true;
     private bool isMatchSettingsOpen;
     private bool isPlayerNameEntryOpen;
+    private bool isSavedNamesOpen;
+    private bool isMatchHistoryOpen;
     private List<string> SavedPlayerNames = new List<string>();
+    private List<MatchHistoryEntry> MatchHistory = new List<MatchHistoryEntry>();
     private Team sTeam = new Team { Name = "South Team", Score = 0 };
     private Team nTeam = new Team { Name = "North Team", Score = 0 };
 
@@ -209,6 +283,32 @@
     }
     #endregion
 
+    private void OpenSavedNames()
+    {
+        isSavedNamesOpen = true;
+    }
+
+    private void CloseSavedNames()
+    {
+        isSavedNamesOpen = false;
+    }
+
+    private void OpenMatchHistory()
+    {
+        isMatchHistoryOpen = true;
+    }
+
+    private void CloseMatchHistory()
+    {
+        isMatchHistoryOpen = false;
+    }
+
+    private async Task RemoveSavedName(string name)
+    {
+        SavedPlayerNames.Remove(name);
+        await JS.InvokeVoidAsync("localStorage.setItem", "SavedPlayerNames", string.Join(",", SavedPlayerNames));
+    }
+
     #region Dialog Methods
     private void ShowNavBar()
     {
@@ -227,6 +327,43 @@
             isNavBarHidden = true;
             StateHasChanged();
         }
+    }
+
+    private void StoreMatchHistoryEntry()
+    {
+        MatchHistory.Add(new MatchHistoryEntry
+        {
+            ServingPlayer = CurrentServer,
+            ServingTeam = servingTeam == 'N' ? nTeam.Name : sTeam.Name,
+            ServerNumber = isFirstServerRotation ? 0 : serverNumber,
+            SouthScore = sTeam.Score,
+            NorthScore = nTeam.Score
+        });
+    }
+
+    private void RestorePreviousServer()
+    {
+        if (MatchHistory.Count == 0)
+        {
+            return;
+        }
+
+        var previous = MatchHistory[^1];
+        servingTeam = previous.ServingTeam == nTeam.Name ? 'N' : 'S';
+        sTeam.Score = previous.SouthScore;
+        nTeam.Score = previous.NorthScore;
+        if (previous.ServerNumber == 0)
+        {
+            serverNumber = 1;
+            isFirstServerRotation = true;
+        }
+        else
+        {
+            serverNumber = previous.ServerNumber;
+            isFirstServerRotation = false;
+        }
+        MatchHistory.RemoveAt(MatchHistory.Count - 1);
+        UpdateCourtNames();
     }
 
     private void ShowPhoneOverlay()
@@ -345,6 +482,9 @@
             case "ArrowRight":
                 await AdvanceServer();
                 break;
+            case "ArrowLeft":
+                RestorePreviousServer();
+                break;
             case " ":
             case "Spacebar":
                 await Speak("score");
@@ -392,6 +532,7 @@
     private async Task AdvanceServer()
     {
         var teamChanged = false;
+        StoreMatchHistoryEntry();
 
         if (isFirstServerRotation)
         {
