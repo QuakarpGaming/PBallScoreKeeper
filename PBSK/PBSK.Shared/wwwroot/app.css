@@ -460,3 +460,43 @@ h1:focus {
 .home-page .modal input[type="checkbox"] {
     accent-color: #39ff14;
 }
+
+.navBarCust .btn {
+    background-color: #39ff14 !important;
+    border: 1px solid #39ff14 !important;
+    color: #000 !important;
+}
+
+.navBarCust .btn:hover,
+.navBarCust .btn:focus {
+    background-color: #000 !important;
+    border-color: #39ff14 !important;
+    color: #39ff14 !important;
+}
+
+.home-page .modal .btn-close {
+    background-color: #39ff14 !important;
+    border: 1px solid #39ff14 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath d='M2.146 2.146a.5.5 0 0 1 .708 0L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
+    opacity: 1;
+}
+
+.home-page .modal .btn-close:hover,
+.home-page .modal .btn-close:focus {
+    background-color: #000 !important;
+    border-color: #39ff14 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%2339ff14' d='M2.146 2.146a.5.5 0 0 1 .708 0L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
+}
+
+.home-page .modal-footer .btn-secondary {
+    background-color: #39ff14 !important;
+    border: 1px solid #39ff14 !important;
+    color: #000 !important;
+}
+
+.home-page .modal-footer .btn-secondary:hover,
+.home-page .modal-footer .btn-secondary:focus {
+    background-color: #000 !important;
+    border-color: #39ff14 !important;
+    color: #39ff14 !important;
+}
